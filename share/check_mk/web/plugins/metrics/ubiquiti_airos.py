@@ -9,13 +9,13 @@ from cmk.gui.plugins.metrics import (
 
 metric_info["traffic"] = {
     "title": _("Traffic"),
-    "unit": "bytes/s",
+    "unit": "bits/s",
     "color": "13/a",
 }
 
 metric_info["rxCapacity"] = {
     "title": _("rxCapacity"),
-    "unit": "bytes/s",
+    "unit": "bits/s",
     "color": "33/a",
 }
  
