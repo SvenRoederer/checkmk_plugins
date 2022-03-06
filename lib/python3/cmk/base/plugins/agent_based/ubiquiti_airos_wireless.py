@@ -85,6 +85,7 @@ def check_airos_as_metric(section):
         txlevel = int(section[0][10])
         rxlevel = int(section[0][0])
         noise = int(section[0][3])
+        ccq = int(section[0][2])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
         sta_tx = int(section[19][-2]) * 1024
@@ -116,6 +117,7 @@ def check_airos_as_metric(section):
     yield Metric(name="txCapacity", value=sta_tx)
     yield Metric(name="rxCapacity", value=sta_rx)
     yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
+    yield Metric(name="ccq", value=ccq)
     yield Result(state=State.OK, summary="Link is operational")
     return
 

@@ -44,6 +44,12 @@ metric_info["rssi_chain_asymetry"] = {
     "color": "33/a",
 }
 
+metric_info["ccq"] = {
+    "title": _("Client Connection Quality"),
+    "unit": "%",
+    "color": "16/b",
+}
+
 
 # https://forum.checkmk.com/t/custom-check-and-graph-template/21067/2 about "graph_info[]" vs. "graph_info.append()"
 graph_info["trafficCombined"] = {
