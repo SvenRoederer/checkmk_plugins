@@ -100,10 +100,10 @@ def check_airos_as_metric(section):
 #    )
     yield Metric(name="rxCapacity", value=rxrate)
     yield Metric(name="frequency", value=rffreq * 1000000)
-#    yield Metric(name="", value=rssi)
-    yield Metric(name="input_signal_power_dbm", value=rxlevel)
     yield Metric(name="output_signal_power_dbm", value=txlevel)
-    yield Metric(name="signal_power_dbm", value=noise)
+    yield Metric(name="input_signal_power_dbm", value=rxlevel)
+    yield Metric(name="rssi", value=rssi)
+    yield Metric(name="noise_level_dbm", value=noise)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
