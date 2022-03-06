@@ -48,6 +48,7 @@ graph_info["trafficCombined"] = {
         ("if_in_bps", "line"),
         ("if_out_bps", "-line"),
     ],
+    "conflicting_metrics": ["bandwidth", "bandwidth_translated",],
 }
 
 graph_info.append({
