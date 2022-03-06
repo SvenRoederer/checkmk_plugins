@@ -88,8 +88,8 @@ def check_airos_as_metric(section):
         noise = int(section[0][3])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
-        sta_tx = int(section[17][-1])
-        sta_rx = int(section[18][-1])
+        sta_tx = int(section[17][-1]) * 1024
+        sta_rx = int(section[18][-1]) * 1024
         print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
