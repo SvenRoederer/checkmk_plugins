@@ -87,23 +87,30 @@ def check_airos_as_metric(section):
         rssi = int(section[0][1])
         noise = int(section[0][3])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
+
+        sta_tx = int(section[17][-1])
+        sta_rx = int(section[18][-1])
+        print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
     
-    yield Metric(name="txCapacity", value=txrate)
+    yield Metric(name="if_out_bps", value=txrate)
+    yield Metric(name="txCapacity", value=sta_tx)
 #    yield from check_levels(
 #        txrate,                                                 # the value as int to check
 #        label = "Data Throughput",                              # Summary Text
 #        metric_name = 'traffic',                                # Name from metric which should be used
 #        render_func = lambda v: render.networkbandwidth(v / 8)  # Bits/Sec to MBits/Sec
 #    )
-    yield Metric(name="rxCapacity", value=rxrate)
+    yield Metric(name="if_in_bps", value=rxrate)
     yield Metric(name="frequency", value=rffreq * 1000000)
     yield Metric(name="output_signal_power_dbm", value=txlevel)
     yield Metric(name="input_signal_power_dbm", value=rxlevel)
     yield Metric(name="rssi", value=rssi)
     yield Metric(name="noise_level_dbm", value=noise)
+    yield Metric(name="txCapacity", value=sta_tx)
+    yield Metric(name="rxCapacity", value=sta_rx)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
@@ -127,6 +134,7 @@ register.snmp_section(
             '1.1.4',  # UBNT-MIB::ubntRadioFreq
             '1.1.5',  # UBNT-MIB::ubntRadioDfsEnabled
             '1.1.6',  # UBNT-MIB::ubntRadioTxPower
+            '7.1', # 
         ],
     ),
 )
