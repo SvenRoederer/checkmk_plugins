@@ -38,6 +38,12 @@ metric_info["rssi"] = {
     "color": "33/a",
 }
 
+metric_info["rssi_chain_asymetry"] = {
+    "title": _("RSSI asymetricy"),
+    "unit": "",
+    "color": "33/a",
+}
+
 
 # https://forum.checkmk.com/t/custom-check-and-graph-template/21067/2 about "graph_info[]" vs. "graph_info.append()"
 graph_info["trafficCombined"] = {
@@ -59,5 +65,13 @@ graph_info.append({
         ("output_signal_power_dbm", "line"),
 # we can't combine different units (RSSI is vendor specific)
 #        ("rssi", "line"),  
+    ],
+})
+
+graph_info.append({
+    "title": _("RSSI state"),
+    "metrics": [
+        ("rssi", "line"),
+        ("rssi_chain_asymetry", "line"),
     ],
 })

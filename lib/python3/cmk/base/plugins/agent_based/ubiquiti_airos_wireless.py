@@ -84,13 +84,17 @@ def check_airos_as_metric(section):
         rffreq = int(section[0][8])
         txlevel = int(section[0][10])
         rxlevel = int(section[0][0])
-        rssi = int(section[0][1])
         noise = int(section[0][3])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
-        sta_tx = int(section[17][-1]) * 1024
-        sta_rx = int(section[18][-1]) * 1024
+        sta_tx = int(section[19][-2]) * 1024
+        sta_rx = int(section[20][-2]) * 1024
         print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
+
+        rssi = int(section[0][1])
+        rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
+        rssiAsym = rssiChains[1]-rssiChains[0]
+        print(f" RSSI-chain: {rssiChains}")
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
@@ -111,6 +115,7 @@ def check_airos_as_metric(section):
     yield Metric(name="noise_level_dbm", value=noise)
     yield Metric(name="txCapacity", value=sta_tx)
     yield Metric(name="rxCapacity", value=sta_rx)
+    yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
@@ -135,6 +140,7 @@ register.snmp_section(
             '1.1.5',  # UBNT-MIB::ubntRadioDfsEnabled
             '1.1.6',  # UBNT-MIB::ubntRadioTxPower
             '7.1', # 
+            '2.1.2', # ubntRadioRssiIndex per Chain
         ],
     ),
 )
