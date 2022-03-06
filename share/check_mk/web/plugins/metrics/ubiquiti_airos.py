@@ -26,10 +26,21 @@ metric_info["txCapacity"] = {
     "color": "16/a",
 }
 
+metric_info["noise_level_dbm"] = {
+    "title": _("Noise"),
+    "unit": "dbm",
+    "color": "33/a",
+}
+
+metric_info["rssi"] = {
+    "title": _("RSSI"),
+    "unit": "",
+    "color": "33/a",
+}
+
 
 # https://forum.checkmk.com/t/custom-check-and-graph-template/21067/2 about "graph_info[]" vs. "graph_info.append()"
 graph_info["trafficCombined"] = {
-#graph_info.append({
     "title": _("Traffic"),
     "metrics": [
         ("rxCapacity", "line"),
@@ -38,4 +49,14 @@ graph_info["trafficCombined"] = {
 #        ("txoctetsAll", "-area"),
     ],
 }
-#)
+
+graph_info.append({
+    "title": _("RF-status"),
+    "metrics": [
+        ("noise_level_dbm", "line"),
+        ("input_signal_power_dbm", "line"),
+        ("output_signal_power_dbm", "line"),
+# we can't combine different units (RSSI is vendor specific)
+#        ("rssi", "line"),  
+    ],
+})
