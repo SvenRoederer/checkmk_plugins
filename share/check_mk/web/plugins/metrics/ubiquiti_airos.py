@@ -43,10 +43,10 @@ metric_info["rssi"] = {
 graph_info["trafficCombined"] = {
     "title": _("Traffic"),
     "metrics": [
-        ("rxCapacity", "line"),
-        ("txCapacity", "-line"),
-#        ("rxoctetsAll", "area"),
-#        ("txoctetsAll", "-area"),
+        ("rxCapacity", "area"),
+        ("txCapacity", "-area"),
+        ("if_in_bps", "line"),
+        ("if_out_bps", "-line"),
     ],
 }
 
