@@ -26,3 +26,16 @@ metric_info["txCapacity"] = {
     "color": "16/a",
 }
 
+
+# https://forum.checkmk.com/t/custom-check-and-graph-template/21067/2 about "graph_info[]" vs. "graph_info.append()"
+graph_info["trafficCombined"] = {
+#graph_info.append({
+    "title": _("Traffic"),
+    "metrics": [
+        ("rxCapacity", "line"),
+        ("txCapacity", "-line"),
+#        ("rxoctetsAll", "area"),
+#        ("txoctetsAll", "-area"),
+    ],
+}
+#)
