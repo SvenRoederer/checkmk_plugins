@@ -81,7 +81,12 @@ def check_airos_as_metric(section):
     try:
         txrate = int(section[0][4])
         rxrate = int(section[0][5])
-        print(f" txrate: {txrate}; rxrate: {rxrate}")
+        rffreq = int(section[0][8])
+        txlevel = int(section[0][10])
+        rxlevel = int(section[0][0])
+        rssi = int(section[0][1])
+        noise = int(section[0][3])
+        print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
@@ -94,6 +99,11 @@ def check_airos_as_metric(section):
 #        render_func = lambda v: render.networkbandwidth(v / 8)  # Bits/Sec to MBits/Sec
 #    )
     yield Metric(name="rxCapacity", value=rxrate)
+    yield Metric(name="frequency", value=rffreq * 1000000)
+#    yield Metric(name="", value=rssi)
+    yield Metric(name="input_signal_power_dbm", value=rxlevel)
+    yield Metric(name="output_signal_power_dbm", value=txlevel)
+    yield Metric(name="signal_power_dbm", value=noise)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
@@ -104,16 +114,19 @@ register.snmp_section(
 #iso.3.6.1.2.1.1.2.0 = OID: iso.3.6.1.4.1.10002.1
 # .1.3.6.1.4.1.41112.1.4.5.1.10.1
     fetch = SNMPTree(
-        base = '.1.3.6.1.4.1.41112.1.4.5.1',
+        base = '.1.3.6.1.4.1.41112.1.4',
         oids = [
-            '5',  # UBNT-AirMAX-MIB::ubntWlStatSignal
-            '6',  # UBNT-AirMAX-MIB::ubntWlStatRssi
-            '7',  # UBNT-AirMAX-MIB::ubntWlStatCcq
-            '8',  # UBNT-AirMAX-MIB::ubntWlStatNoiseFloor
-            '9',  # UBNT-AirMAX-MIB::ubntWlStatTxRate
-            '10', # UBNT-AirMAX-MIB::ubntWlStatRxRate
-            '14', # UBNT-AirMAX-MIB::ubntWlStatChanWidth
-            '15', # UBNT-AirMAX-MIB::ubntWlStatStaCount
+            '5.1.5',  # UBNT-AirMAX-MIB::ubntWlStatSignal
+            '5.1.6',  # UBNT-AirMAX-MIB::ubntWlStatRssi
+            '5.1.7',  # UBNT-AirMAX-MIB::ubntWlStatCcq
+            '5.1.8',  # UBNT-AirMAX-MIB::ubntWlStatNoiseFloor
+            '5.1.9',  # UBNT-AirMAX-MIB::ubntWlStatTxRate
+            '5.1.10', # UBNT-AirMAX-MIB::ubntWlStatRxRate
+            '5.1.14', # UBNT-AirMAX-MIB::ubntWlStatChanWidth
+            '5.1.15', # UBNT-AirMAX-MIB::ubntWlStatStaCount
+            '1.1.4',  # UBNT-MIB::ubntRadioFreq
+            '1.1.5',  # UBNT-MIB::ubntRadioDfsEnabled
+            '1.1.6',  # UBNT-MIB::ubntRadioTxPower
         ],
     ),
 )
