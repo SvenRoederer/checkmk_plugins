@@ -77,9 +77,11 @@ def check_airos_as_metric(section):
 #    print(item)
 #    print(params)
     txrate = -100000
+    rxrate = -100000
     try:
         txrate = int(section[0][4])
-        print(f" txrate: {txrate}")
+        rxrate = int(section[0][5])
+        print(f" txrate: {txrate}; rxrate: {rxrate}")
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
@@ -91,6 +93,7 @@ def check_airos_as_metric(section):
 #        metric_name = 'traffic',                                # Name from metric which should be used
 #        render_func = lambda v: render.networkbandwidth(v / 8)  # Bits/Sec to MBits/Sec
 #    )
+    yield Metric(name="rxCapacity", value=rxrate)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
