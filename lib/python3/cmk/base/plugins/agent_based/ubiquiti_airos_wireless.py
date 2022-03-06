@@ -96,6 +96,7 @@ def check_airos_as_metric(section):
         rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
         rssiAsym = rssiChains[1]-rssiChains[0]
         print(f" RSSI-chain: {rssiChains}")
+        cinr = int(section[18][-2])
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
@@ -118,6 +119,7 @@ def check_airos_as_metric(section):
     yield Metric(name="rxCapacity", value=sta_rx)
     yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
     yield Metric(name="ccq", value=ccq)
+    yield Metric(name="cinr_db", value=cinr)
     yield Result(state=State.OK, summary="Link is operational")
     return
 

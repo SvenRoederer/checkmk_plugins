@@ -44,6 +44,12 @@ metric_info["rssi_chain_asymetry"] = {
     "color": "33/a",
 }
 
+metric_info["cinr_db"] = {
+    "title": _("Carrier to Interference+Noise Ratio"),
+    "unit": "",
+    "color": "16/b",
+}
+
 metric_info["ccq"] = {
     "title": _("Client Connection Quality"),
     "unit": "%",
@@ -79,5 +85,6 @@ graph_info.append({
     "metrics": [
         ("rssi", "line"),
         ("rssi_chain_asymetry", "line"),
+        ("cinr_db", "line"),
     ],
 })
