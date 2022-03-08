@@ -37,79 +37,52 @@ class KempService(TypedDict, total=False):
 Section = Mapping[str, KempService]
 
 
-def discover_linux_usbstick(section):
-    print(f"discovery for airos_wifi: {section}")
-    txrate = int(section[0][4])/8
-    print(f" txrate: {txrate}")
+def discover_ubiquiti_airos_sta(section):
+    print(f"discovery for airos_wireless_sta: {section}")
+#    txrate = int(section[0][4])/8
+#    print(f" txrate: {txrate}")
 #    print(type(txrate))
-    print(render.networkbandwidth(txrate))
+#    print(render.networkbandwidth(txrate))
     yield Service()
 
-def check_linux_usbstick(section):
-    print(f"check for airos_wifi_sta: {section}")
-    txrate = 0
-    try:
-        txrate = int(section[0][4])
-        print(f" txrate: {txrate}")
-    except ValueError:
-        yield Result(state=State.UNKNOWN, summary=f"failed to parse SNMP TXlink-speed {section[0][4]}")
-        return
-    
-    if txrate == 0:
-        yield Result(state=State.WARN, summary="TXlink-speed=0")
-    else:
-        yield Result(state=State.OK, summary=f"TXlink-speed={render.networkbandwidth(txrate/8)}")
-    return
-
 def check_ubiquiti_airos_sta(section):
-    print(f"check for airos_wifi_sta: {section}")
+    print(f"check for airos_wireless_sta: {section}")
 #    print(item)
 #    print(params)
     txrate = -100000
     rxrate = -100000
+    if len(section) > 1:
+        yield Result(state=State.CRIT, notice="more than one link to APs reported")
+        return
+    if len(section) == 0:
+        yield Result(state=State.WARN, notice="not connected to an AP.")
+        return
+    result = section[0]
     try:
-        txrate = int(section[0][4])
-        rxrate = int(section[0][5])
-        rffreq = int(section[0][8])
-        txlevel = int(section[0][10])
-        rxlevel = int(section[0][0])
-        noise = int(section[0][3])
-        ccq = int(section[0][2])
-        print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
-
-        sta_tx = int(section[19][-2]) * 1024
-        sta_rx = int(section[20][-2]) * 1024
+        rxlevel = int(result[2])
+        noise = int(result[3])
+        ccq = int(result[4])
+        txrate = int(result[5])
+        rxrate = int(result[6])
+        cinr = int(result[7])
+        sta_tx = int(result[8]) * 1024
+        sta_rx = int(result[9]) * 1024
+        airtime_tx = float(result[8]) / 10
+        airtime_rx = float(result[9]) /10
         print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
+        print(f" rxlevel: {rxlevel}; noise: {noise}; CINR {cinr}")
 
-        rssi = int(section[0][1])
-        rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
-        rssiAsym = rssiChains[1]-rssiChains[0]
-        print(f" RSSI-chain: {rssiChains}")
-        cinr = int(section[18][-2])
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
     
-    yield Metric(name="if_out_bps", value=txrate)
-    yield Metric(name="txCapacity", value=sta_tx)
-#    yield from check_levels(
-#        txrate,                                                 # the value as int to check
-#        label = "Data Throughput",                              # Summary Text
-#        metric_name = 'traffic',                                # Name from metric which should be used
-#        render_func = lambda v: render.networkbandwidth(v / 8)  # Bits/Sec to MBits/Sec
-#    )
-    yield Metric(name="if_in_bps", value=rxrate)
-    yield Metric(name="frequency", value=rffreq * 1000000)
-    yield Metric(name="output_signal_power_dbm", value=txlevel)
-    yield Metric(name="input_signal_power_dbm", value=rxlevel)
-    yield Metric(name="rssi", value=rssi)
-    yield Metric(name="noise_level_dbm", value=noise)
     yield Metric(name="txCapacity", value=sta_tx)
     yield Metric(name="rxCapacity", value=sta_rx)
-    yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
+    yield Metric(name="input_signal_power_dbm", value=rxlevel)
+    yield Metric(name="noise_level_dbm", value=noise)
     yield Metric(name="ccq", value=ccq)
     yield Metric(name="cinr_db", value=cinr)
-    yield Result(state=State.OK, summary="Link is operational")
+    yield Result(state=State.OK, summary=f"connected to AP: {result[1]}")
     return
 
 register.snmp_section(
@@ -119,21 +92,21 @@ register.snmp_section(
         equals(".1.3.6.1.4.1.41112.1.4.1.1.2.1", "1"),
     ),
     fetch = SNMPTree(
-        base = '.1.3.6.1.4.1.41112.1.4',
+        base = '.1.3.6.1.4.1.41112.1.4.7.1',
         oids = [
-            '5.1.5',  # UBNT-AirMAX-MIB::ubntWlStatSignal
-            '5.1.6',  # UBNT-AirMAX-MIB::ubntWlStatRssi
-            '5.1.7',  # UBNT-AirMAX-MIB::ubntWlStatCcq
-            '5.1.8',  # UBNT-AirMAX-MIB::ubntWlStatNoiseFloor
-            '5.1.9',  # UBNT-AirMAX-MIB::ubntWlStatTxRate
-            '5.1.10', # UBNT-AirMAX-MIB::ubntWlStatRxRate
-            '5.1.14', # UBNT-AirMAX-MIB::ubntWlStatChanWidth
-            '5.1.15', # UBNT-AirMAX-MIB::ubntWlStatStaCount
-            '1.1.4',  # UBNT-MIB::ubntRadioFreq
-            '1.1.5',  # UBNT-MIB::ubntRadioDfsEnabled
-            '1.1.6',  # UBNT-MIB::ubntRadioTxPower
-            '7.1', # 
-            '2.1.2', # ubntRadioRssiIndex per Chain
+            '1',  # ubntStaMac
+            '2',  # ubntStaName
+            '3',  # ubntStaSignal
+            '4',  # ubntStaNoiseFloor
+            '6',  # ubntStaCcq
+            '11', # ubntStaTxRate
+            '12', # ubntStaRxRate
+            '16', # ubntStaLocalCINR
+            '17', # ubntStaTxCapacity
+            '18', # ubntStaRxCapacity
+            '19', # ubntStaTxAirtime
+            '20', # ubntStaRxAirtime
+            '21', # ubntStaTxLatency
         ],
     ),
 )
@@ -142,6 +115,6 @@ register.check_plugin(
     name="ubnt_airos_wireless_sta",
     service_name="ubiquiti_airos_wifilink_sta_service",
     sections=["snmp_ubiquiti_airos_wifilink_sta_info"],
-    discovery_function=discover_linux_usbstick,
+    discovery_function=discover_ubiquiti_airos_sta,
     check_function=check_ubiquiti_airos_sta,
 )
