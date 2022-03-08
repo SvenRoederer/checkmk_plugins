@@ -121,8 +121,8 @@ register.snmp_section(
 
 register.check_plugin(
     name="ubnt_airos_wireless_ap",
-    service_name="ubiquiti_airos_wifilink_service",
-    sections=["snmp_ubiquiti_airos_wifilink_info"],
+    service_name="ubiquiti_airos_wifilink_ap_service",
+    sections=["snmp_ubiquiti_airos_wifilink_ap_info"],
     discovery_function=discover_ubiquiti_airos_ap,
     check_function=check_ubiquiti_airos_ap,
 )
