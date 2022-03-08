@@ -61,7 +61,7 @@ def check_ubiquiti_airos_ap(section):
         bwidth = int(ap_data[7])
         sta_count = int(ap_data[8])
         
-        print(f" txrate: {txrate}; rxrate: {rxrate}; rx-level {rxlevel}; noise {noise}")
+        print(f" AP: txrate: {txrate}; rxrate: {rxrate}; rx-level {rxlevel}; noise {noise}")
 
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {ap_data[4]}")
@@ -81,38 +81,33 @@ def check_ubiquiti_airos_ap(section):
     if len(section) == 0:
         yield Result(state=State.WARN, notice="no station connected.")
         return
-    if len(section) > 1:
-        yield Result(state=State.WARN, notice="more than 1 station connected --> needs to be implemented ....")
-        return
 
-    sta_data = section[0]
-    sta_data = sta_data[9:]
-    try:
-        sta_mac = sta_data[0]
-        sta_name = sta_data[1]
-        sta_rxlevel = int(sta_data[2])
-        sta_noise = int(sta_data[3])
-        sta_ccq = int(sta_data[4])
-        sta_txrate = int(sta_data[5])
-        sta_rxrate = int(sta_data[6])
-        sta_cinr = int(sta_data[7])
-        sta_tx = int(sta_data[8]) * 1024
-        sta_rx = int(sta_data[9]) * 1024
-        sta_air_tx = float(sta_data[10]) / 10
-        sta_air_rx = float(sta_data[11]) / 10
-        sta_lat = int(sta_data[12])
+    for sta_data in section:
+        sta_data = sta_data[9:]
+        try:
+            sta_mac = sta_data[0]
+            sta_name = sta_data[1]
+            sta_rxlevel = int(sta_data[2])
+            sta_noise = int(sta_data[3])
+            sta_ccq = int(sta_data[4])
+            sta_txrate = int(sta_data[5])
+            sta_rxrate = int(sta_data[6])
+            sta_cinr = int(sta_data[7])
+            sta_tx = int(sta_data[8]) * 1024
+            sta_rx = int(sta_data[9]) * 1024
+            sta_air_tx = float(sta_data[10]) / 10
+            sta_air_rx = float(sta_data[11]) / 10
+            sta_lat = int(sta_data[12])
         
+            print(f" Station {sta_name}: txrate: {sta_txrate}; rxrate: {sta_rxrate}; txrate: {sta_tx}; rxrate: {sta_rx}") #; freq {rffreq}")
 
-        print(f" Station: txrate: {sta_txrate}; rxrate: {sta_rxrate}") #; freq {rffreq}")
-        print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
-
-#        rssi = int(sta_data[1])
-#        rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
-#        rssiAsym = rssiChains[1]-rssiChains[0]
-#        print(f" RSSI-chain: {rssiChains}")
-    except ValueError:
-#        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {sta_data[4]}")
-        return
+#            rssi = int(sta_data[1])
+#            rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
+#            rssiAsym = rssiChains[1]-rssiChains[0]
+#            print(f" RSSI-chain: {rssiChains}")
+        except ValueError:
+#            yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {sta_data[4]}")
+            return
     
     yield Metric(name="txCapacity", value=sta_tx)
     yield Metric(name="rxCapacity", value=sta_rx)
