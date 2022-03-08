@@ -47,7 +47,7 @@ def discover_ubiquiti_airos_ap(section):
 
 
 def check_ubiquiti_airos_ap(section):
-    print(f"check for airos_wifi_ap: {section}")
+    print(f"check for airos_wireless_ap: {section}")
 #    print(item)
 #    print(params)
     txrate = -100000
