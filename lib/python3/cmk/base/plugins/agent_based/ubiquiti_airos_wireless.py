@@ -90,16 +90,16 @@ def check_airos_as_metric(section):
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
         if sta_count > 0:
-            sta_tx = int(section[19][-2]) * 1024
-            sta_rx = int(section[20][-2]) * 1024
+            sta_tx = int(section[sta_count*19][-2]) * 1024
+            sta_rx = int(section[sta_count*20][-2]) * 1024
             print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
 
         rssi = int(section[0][1])
         if sta_count > 0:
-            rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
+            rssiChains = [int(section[sta_count*1][-1]), int(section[sta_count*3][-1]) ]
             rssiAsym = rssiChains[1]-rssiChains[0]
             print(f" RSSI-chain: {rssiChains}")
-            cinr = int(section[18][-2])
+            cinr = int(section[sta_count*18][-2])
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
