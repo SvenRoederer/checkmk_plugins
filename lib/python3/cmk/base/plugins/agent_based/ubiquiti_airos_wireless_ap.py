@@ -43,6 +43,8 @@ def discover_ubiquiti_airos_ap(section):
 
 
 def check_ubiquiti_airos_ap(section):
+    msg = ""
+    
     print(f"check for airos_wireless_ap: {section}")
 
     if len(section) == 0:
@@ -64,7 +66,7 @@ def check_ubiquiti_airos_ap(section):
         print(f" AP: txrate: {txrate}; rxrate: {rxrate}; rx-level {rxlevel}; noise {noise}")
 
     except ValueError:
-#        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {ap_data[4]}")
+        msg += f"failed to parse SNMP TXlink-speed {ap_data[4]}"
         return
 
     yield Metric(name="if_out_bps", value=txrate)
@@ -106,7 +108,7 @@ def check_ubiquiti_airos_ap(section):
 #            rssiAsym = rssiChains[1]-rssiChains[0]
 #            print(f" RSSI-chain: {rssiChains}")
         except ValueError:
-#            yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {sta_data[4]}")
+            msg += f"failed to parse SNMP TXlink-speed {sta_data[4]}"
             return
     
     yield Metric(name="txCapacity", value=sta_tx)
@@ -121,7 +123,7 @@ def check_ubiquiti_airos_ap(section):
     yield Metric(name="ccq", value=sta_ccq)
     yield Metric(name="cinr_db", value=sta_cinr)
 
-    yield Result(state=State.OK, summary=f"AP is up with SSID {ssid}, {sta_count} stations connected")
+    yield Result(state=State.OK, summary=f"AP is up with SSID {ssid}, {sta_count} stations connected {msg}")
     return
 
 register.snmp_section(
