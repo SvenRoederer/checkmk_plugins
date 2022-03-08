@@ -79,6 +79,7 @@ def check_airos_as_metric(section):
     txrate = -100000
     rxrate = -100000
     try:
+        sta_count = int(section[0][7])
         txrate = int(section[0][4])
         rxrate = int(section[0][5])
         rffreq = int(section[0][8])
@@ -88,21 +89,24 @@ def check_airos_as_metric(section):
         ccq = int(section[0][2])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
-        sta_tx = int(section[19][-2]) * 1024
-        sta_rx = int(section[20][-2]) * 1024
-        print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
+        if sta_count > 0:
+            sta_tx = int(section[19][-2]) * 1024
+            sta_rx = int(section[20][-2]) * 1024
+            print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
 
         rssi = int(section[0][1])
-        rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
-        rssiAsym = rssiChains[1]-rssiChains[0]
-        print(f" RSSI-chain: {rssiChains}")
-        cinr = int(section[18][-2])
+        if sta_count > 0:
+            rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
+            rssiAsym = rssiChains[1]-rssiChains[0]
+            print(f" RSSI-chain: {rssiChains}")
+            cinr = int(section[18][-2])
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
     
-    yield Metric(name="if_out_bps", value=txrate)
-    yield Metric(name="txCapacity", value=sta_tx)
+    if sta_count > 0:
+        yield Metric(name="if_out_bps", value=txrate)
+        yield Metric(name="txCapacity", value=sta_tx)
 #    yield from check_levels(
 #        txrate,                                                 # the value as int to check
 #        label = "Data Throughput",                              # Summary Text
@@ -113,13 +117,14 @@ def check_airos_as_metric(section):
     yield Metric(name="frequency", value=rffreq * 1000000)
     yield Metric(name="output_signal_power_dbm", value=txlevel)
     yield Metric(name="input_signal_power_dbm", value=rxlevel)
-    yield Metric(name="rssi", value=rssi)
     yield Metric(name="noise_level_dbm", value=noise)
-    yield Metric(name="txCapacity", value=sta_tx)
-    yield Metric(name="rxCapacity", value=sta_rx)
-    yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
+    yield Metric(name="rssi", value=rssi)
     yield Metric(name="ccq", value=ccq)
-    yield Metric(name="cinr_db", value=cinr)
+    if sta_count > 0:
+        yield Metric(name="txCapacity", value=sta_tx)
+        yield Metric(name="rxCapacity", value=sta_rx)
+        yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
+        yield Metric(name="cinr_db", value=cinr)
     yield Result(state=State.OK, summary="Link is operational")
     return
 
