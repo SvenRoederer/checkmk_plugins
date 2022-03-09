@@ -39,19 +39,27 @@ Section = Mapping[str, KempService]
 
 def discover_ubiquiti_airos_peer(section):
     print(f"discovery for airos_wireless_peer: {section}")
-#    txrate = int(section[0][4])/8
-#    print(f" txrate: {txrate}")
-#    print(type(txrate))
-#    print(render.networkbandwidth(txrate))
-    yield Service()
+    for peer in section:
+#    for (mac, name, rssi, ...) in section:
+        yield Service(item = peer[1])
 
-def check_ubiquiti_airos_peer(section):
-    print(f"check for airos_wireless_peer: {section}")
+def check_ubiquiti_airos_peer(item, section):
+    print(f"check for airos_wireless_peer: name {item} with {section}")
     if len(section) == 0:
         yield Result(state=State.WARN, notice="not connected with any peer.")
         return
 
+    peer_found = False
+    # find our Peer in the list
     for sta_data in section:
+        if not item == sta_data[1]:
+            # only process Peer that we are looking for
+            continue
+
+        assert not peer_found, "Peer has been found already. Plugin-error or Peer-name exists twice."
+
+        peer_found = True
+        # parse the data
         try:
             sta_mac = sta_data[0]
             sta_name = sta_data[1]
@@ -70,7 +78,7 @@ def check_ubiquiti_airos_peer(section):
             print(f" Station {sta_name}: txrate: {sta_txrate}; rxrate: {sta_rxrate}; txrate: {sta_tx}; rxrate: {sta_rx}")
 
         except ValueError:
-            msg += f"failed to parse SNMP TXlink-speed {sta_data[4]}"
+            yield Result(state=State.CRITICAL, summary=f"failed to parse SNMP data for {sta_data[1]}")
             return
     
     yield Metric(name="txCapacity", value=sta_tx)
@@ -82,36 +90,9 @@ def check_ubiquiti_airos_peer(section):
     yield Metric(name="ccq", value=sta_ccq)
     yield Metric(name="cinr_db", value=sta_cinr)
 
-    yield Result(state=State.OK, summary=f"connected to {len(section)} Peer(s)")
+    yield Result(state=State.OK, summary=f"connected to Peer {sta_name}", details=f"tx:{render.networkbandwidth(sta_tx)};rx:{render.networkbandwidth(sta_rx)}")
     return
 
-    result = section[0]
-    try:
-        rxlevel = int(result[2])
-        noise = int(result[3])
-        ccq = int(result[4])
-        txrate = int(result[5])
-        rxrate = int(result[6])
-        cinr = int(result[7])
-        sta_tx = int(result[8]) * 1024
-        sta_rx = int(result[9]) * 1024
-        airtime_tx = float(result[8]) / 10
-        airtime_rx = float(result[9]) /10
-        print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
-        print(f" rxlevel: {rxlevel}; noise: {noise}; CINR {cinr}")
-
-    except ValueError:
-#        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
-        return
-    
-    yield Metric(name="txCapacity", value=sta_tx)
-    yield Metric(name="rxCapacity", value=sta_rx)
-    yield Metric(name="input_signal_power_dbm", value=rxlevel)
-    yield Metric(name="noise_level_dbm", value=noise)
-    yield Metric(name="ccq", value=ccq)
-    yield Metric(name="cinr_db", value=cinr)
-    yield Result(state=State.OK, summary=f"connected to AP: {result[1]}")
-    return
 
 register.snmp_section(
     name = "snmp_ubiquiti_airos_wireless_peer_info",
@@ -144,7 +125,7 @@ register.snmp_section(
 
 register.check_plugin(
     name="ubnt_airos_wireless_peer",
-    service_name="ubiquiti_airos_wireless_peer_service",
+    service_name="ubiquiti_airos_wireless_peer_service %s",
     sections=["snmp_ubiquiti_airos_wireless_peer_info"],
     discovery_function=discover_ubiquiti_airos_peer,
     check_function=check_ubiquiti_airos_peer,
