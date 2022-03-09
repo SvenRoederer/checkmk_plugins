@@ -87,4 +87,6 @@ graph_info.append({
         ("rssi_chain_asymetry", "line"),
         ("cinr_db", "line"),
     ],
+    "optional_metrics": ["rssi_chain_asymetry"],
 })
+
