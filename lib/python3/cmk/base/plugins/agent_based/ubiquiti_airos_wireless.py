@@ -78,6 +78,9 @@ def check_airos_as_metric(section):
 #    print(params)
     txrate = -100000
     rxrate = -100000
+
+    assert int(section[0][7]) < 3, "more than 2 peers are not supported"
+
     try:
         sta_count = int(section[0][7])
         txrate = int(section[0][4])
@@ -87,19 +90,24 @@ def check_airos_as_metric(section):
         rxlevel = int(section[0][0])
         noise = int(section[0][3])
         ccq = int(section[0][2])
+        rssi = int(section[0][1])
         print(f" txrate: {txrate}; rxrate: {rxrate}; freq {rffreq}")
 
-        if sta_count > 0:
-            sta_tx = int(section[sta_count*19][-2]) * 1024
-            sta_rx = int(section[sta_count*20][-2]) * 1024
-            print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
+        if sta_count == 1:
+            cinr = int(section[18][-2])
+            sta_tx = int(section[19][-2]) * 1024
+            sta_rx = int(section[20][-2]) * 1024
+            rssiChains = [int(section[1][-1]), int(section[3][-1]) ]
+        elif sta_count == 2:
+            cinr = int(section[15*sta_count+3][-2])
+            sta_tx = int(section[16*sta_count+3][-2]) * 1024
+            sta_rx = int(section[17*sta_count+3][-2]) * 1024
+            rssiChains = [int(section[1][-1]), int(section[4][-1]) ]
 
-        rssi = int(section[0][1])
-        if sta_count > 0:
-            rssiChains = [int(section[sta_count*1][-1]), int(section[sta_count*3][-1]) ]
+        if sta_count != 0:
             rssiAsym = rssiChains[1]-rssiChains[0]
+            print(f" Station: txrate: {sta_tx}; rxrate: {sta_rx}")
             print(f" RSSI-chain: {rssiChains}")
-            cinr = int(section[sta_count*18][-2])
     except ValueError:
 #        yield Result(state=State.CRIT, notice=f"failed to parse SNMP TXlink-speed {section[0][4]}")
         return
