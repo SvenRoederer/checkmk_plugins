@@ -81,16 +81,19 @@ def check_ubiquiti_airos_peer(item, section):
             yield Result(state=State.CRITICAL, summary=f"failed to parse SNMP data for {sta_data[1]}")
             return
     
-    yield Metric(name="txCapacity", value=sta_tx)
-    yield Metric(name="rxCapacity", value=sta_rx)
-    yield Metric(name="if_out_bps", value=sta_txrate)
-    yield Metric(name="if_in_bps", value=sta_rxrate)
-    yield Metric(name="input_signal_power_dbm", value=sta_rxlevel)
-    yield Metric(name="noise_level_dbm", value=sta_noise)
-    yield Metric(name="ccq", value=sta_ccq)
-    yield Metric(name="cinr_db", value=sta_cinr)
+    if peer_found:
+        yield Metric(name="txCapacity", value=sta_tx)
+        yield Metric(name="rxCapacity", value=sta_rx)
+        yield Metric(name="if_out_bps", value=sta_txrate)
+        yield Metric(name="if_in_bps", value=sta_rxrate)
+        yield Metric(name="input_signal_power_dbm", value=sta_rxlevel)
+        yield Metric(name="noise_level_dbm", value=sta_noise)
+        yield Metric(name="ccq", value=sta_ccq)
+        yield Metric(name="cinr_db", value=sta_cinr)
+        yield Result(state=State.OK, summary=f"connected to Peer {sta_name}", details=f"tx:{render.networkbandwidth(sta_tx)};rx:{render.networkbandwidth(sta_rx)}")
+    else:
+        yield Result(state=State.CRITICAL, summary=f"no connection to Peer {item}")
 
-    yield Result(state=State.OK, summary=f"connected to Peer {sta_name}", details=f"tx:{render.networkbandwidth(sta_tx)};rx:{render.networkbandwidth(sta_rx)}")
     return
 
 
