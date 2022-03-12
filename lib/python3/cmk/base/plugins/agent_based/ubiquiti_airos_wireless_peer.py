@@ -78,7 +78,7 @@ def check_ubiquiti_airos_peer(item, section):
             print(f" Station {sta_name}: txrate: {sta_txrate}; rxrate: {sta_rxrate}; txrate: {sta_tx}; rxrate: {sta_rx}")
 
         except ValueError:
-            yield Result(state=State.CRITICAL, summary=f"failed to parse SNMP data for {sta_data[1]}")
+            yield Result(state=State.CRIT, summary=f"failed to parse SNMP data for {sta_data[1]}")
             return
     
     if peer_found:
@@ -92,7 +92,7 @@ def check_ubiquiti_airos_peer(item, section):
         yield Metric(name="cinr_db", value=sta_cinr)
         yield Result(state=State.OK, summary=f"connected to Peer {sta_name}", details=f"tx:{render.networkbandwidth(sta_tx)};rx:{render.networkbandwidth(sta_rx)}")
     else:
-        yield Result(state=State.CRITICAL, summary=f"no connection to Peer {item}")
+        yield Result(state=State.CRIT, summary=f"no connection to Peer {item}")
 
     return
 
