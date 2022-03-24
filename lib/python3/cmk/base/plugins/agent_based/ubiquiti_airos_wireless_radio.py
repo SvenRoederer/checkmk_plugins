@@ -4,11 +4,18 @@
 # This file is part of Checkmk (https://checkmk.com). It is subject to the terms and
 # conditions defined in the file COPYING, which is part of this source code package.
 
-from typing import TypedDict, Mapping, List, Iterable, Tuple
+from typing import TypedDict, Mapping, List, Iterable, Tuple, Dict, NamedTuple
 
 #from .agent_based_api.v1.type_defs import StringTable
 #from .agent_based_api.v1 import register, OIDEnd, SNMPTree, startswith
 from .agent_based_api.v1 import *
+from .agent_based_api.v1.type_defs import (
+#    CheckResult,
+#    DiscoveryResult,
+    HostLabelGenerator,
+    InventoryResult,
+            )
+#from .agent_based_api.v1 import HostLabel
 
 map_states = {
     1: (0, 'in service'),
@@ -36,6 +43,18 @@ class KempService(TypedDict, total=False):
 
 Section = Mapping[str, KempService]
 
+class SNMPInfo(NamedTuple):
+    description: str
+    contact: str
+    name: str
+    location: str
+
+def host_labels(section) -> HostLabelGenerator:
+#    print(f"host_labels: {section}")
+    if section:
+#        print(" yielding Hostlabel cmk/wireless --> ubiquiti")
+        yield HostLabel("cmk/device_type", 'wireless')
+        yield HostLabel('cmk/wireless_type', 'ubiquiti')
 
 def discover_ubiquiti_airos_wireless_radio(section):
     print(f"discovery for airos_wireless_radio: {section}")
@@ -64,6 +83,8 @@ def check_ubiquiti_airos_wireless_radio(section):
 register.snmp_section(
     name = "snmp_ubiquiti_airos_wireless_radio_info",
     detect = startswith(".1.3.6.1.2.1.1.9.1.3.5", "Ubiquiti Networks MIB module"),
+    # host_label stuff taken from lib/python3/cmk/base/plugins/agent_based/snmp_info.py
+    host_label_function=host_labels,
     fetch = SNMPTree(
         base = '.1.3.6.1.4.1.41112.1.4',
         oids = [
@@ -82,3 +103,24 @@ register.check_plugin(
     discovery_function=discover_ubiquiti_airos_wireless_radio,
     check_function=check_ubiquiti_airos_wireless_radio,
 )
+
+def inventory_snmp_wireless_info(section: SNMPInfo) -> InventoryResult:
+    print(f"inventory_wireless_snmp_info: {section}")
+    yield Attributes(path=["hardware", "system"],
+                     inventory_attributes={
+                         "product": section.description,
+                     })
+
+    yield Attributes(path=["software", "configuration", "snmp_info"],
+                     inventory_attributes={
+                         "contact": section.contact,
+                         "name": section.name,
+                         "location": section.location,
+                     })
+
+
+register.inventory_plugin(
+    name="snmp_wireless_info",
+    inventory_function=inventory_snmp_wireless_info,
+)
+
