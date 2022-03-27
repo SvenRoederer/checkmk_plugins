@@ -49,6 +49,11 @@ class SNMPInfo(NamedTuple):
     name: str
     location: str
 
+ubntRadioMode = {
+    "1" : "Station",
+    "4" : "AP-WDS",
+}
+
 def host_labels(section) -> HostLabelGenerator:
 #    print(f"host_labels: {section}")
     if section:
@@ -68,6 +73,7 @@ def check_ubiquiti_airos_wireless_radio(section):
         txlevel = int(section[0][2])
         rssiChains = [int(section[1][-1]), int(section[2][-1]) ]
         rssiAsym = rssiChains[1]-rssiChains[0]
+        radioMode = section[0][3]
         print(f" radio: freq {rffreq}; TX-power {txlevel}")
 
     except ValueError:
@@ -77,7 +83,7 @@ def check_ubiquiti_airos_wireless_radio(section):
     yield Metric(name="frequency", value=rffreq)
     yield Metric(name="output_signal_power_dbm", value=txlevel)
     yield Metric(name="rssi_chain_asymetry", value=rssiAsym)
-    yield Result(state=State.OK, summary="Radio is operational", details=f"Frequency: {render.frequency(rffreq)}; tx-power: {txlevel} dbm")
+    yield Result(state=State.OK, summary=f"Radio is operational in {ubntRadioMode[radioMode]} mode", details=f"Frequency: {render.frequency(rffreq)}; tx-power: {txlevel} dbm")
     return
 
 register.snmp_section(
@@ -91,6 +97,7 @@ register.snmp_section(
             '1.1.4',  # UBNT-MIB::ubntRadioFreq
             '1.1.5',  # UBNT-MIB::ubntRadioDfsEnabled
             '1.1.6',  # UBNT-MIB::ubntRadioTxPower
+            '1.1.2',  # UBNT-MIB::ubntRadioMode
             '2.1.2',  # ubntRadioRssiIndex per Chain
         ],
     ),
